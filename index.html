@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Le Juste Chiffre - Jeu d'Ambiance</title>
+    <style>
+      :root {
+        --primary: #6366f1;
+        --secondary: #ec4899;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #1e293b;
+        --success: #22c55e;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 600px;
+        width: 100%;
+        background: var(--card);
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        padding: 30px;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+        color: var(--primary);
+      }
+      h2 {
+        font-size: 1.4rem;
+        margin-bottom: 20px;
+      }
+      p {
+        line-height: 1.6;
+        color: #64748b;
+        margin-bottom: 20px;
+      }
+
+      .btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.1s, background 0.2s;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn-secondary {
+        background: var(--secondary);
+      }
+      .btn-outline {
+        background: transparent;
+        border: 2px solid #cbd5e1;
+        color: #64748b;
+      }
+      .btn-success {
+        background: var(--success);
+      }
+
+      .grid-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+      }
+
+      .secret-number {
+        font-size: 6rem;
+        font-weight: 800;
+        color: var(--secondary);
+        margin: 20px 0;
+        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      .input-box {
+        width: 100%;
+        padding: 15px;
+        font-size: 1.1rem;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        box-sizing: border-box;
+        text-align: center;
+      }
+
+      .history-item {
+        background: #f1f5f9;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        text-align: left;
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+      }
+      .history-topic {
+        font-weight: bold;
+      }
+
+      .scale-info {
+        background: #fff1f2;
+        color: #be123c;
+        padding: 10px;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        margin-bottom: 20px;
+      }
+
+      .voter-list {
+        text-align: left;
+        margin-bottom: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px;
+      }
+      .voter-tag {
+        display: inline-block;
+        background: #e0e7ff;
+        color: var(--primary);
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        margin: 3px;
+        font-weight: bold;
+      }
+
+      .result-card {
+        background: #f8fafc;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 5px solid #cbd5e1;
+      }
+      .result-perfect {
+        border-left-color: var(--success);
+        background: #f0fdf4;
+      }
+      .result-close {
+        border-left-color: var(--warning);
+        background: #fffbeb;
+      }
+      .result-far {
+        border-left-color: var(--danger);
+        background: #fef2f2;
+      }
+
+      @keyframes popIn {
+        from {
+          opacity: 0;
+          transform: scale(0.5);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @media (max-width: 480px) {
+        .grid-options {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="app"></div>
+
+    <script>
+      const TOPICS = [
+        "Un sport",
+        "Un plat",
+        "Un fruit",
+        "Un légume",
+        "Une application",
+        "Une saison",
+        "Une ville de France",
+        "Une ville hors de France",
+        "Une couleur",
+        "Un moyen de transport",
+        "Un type de logement",
+        "Un medicament",
+        "Une place dans la voiture",
+        "Une odeur",
+        "Un organe",
+        "Une créature mythologique",
+        "Un Animal",
+        "Une manière de dormir",
+        "Une position de repos",
+        "Une personne de ta famille",
+        "Un site internet",
+        "Un paysage/écosystème",
+        "Une manière de mourir",
+        "Un rôle dans un mariage",
+        "Une boisson chaude",
+        "Un personnage fictif",
+        "Jour de la semaine",
+        "Un prénom",
+        "Une personne politique",
+        "Un.e auteur.rice",
+        "Une émotion",
+        "Une sensation",
+      ];
+
+      // --- STATE MANAGEMENT ---
+      const state = {
+        step: "WELCOME",
+        secretNumber: 0,
+        round: 1,
+        maxRounds: 5,
+        deck: [], // Liste mélangée pour la partie en cours
+        currentOptions: [], // Les 4 options actuelles
+        selectedTopic: "",
+        history: [],
+        finalGuesses: [], // Tableau des votes [5, 2, 10...]
+      };
+
+      const app = document.getElementById("app");
+
+      // --- FUNCTIONS ---
+
+      function initGame() {
+        state.secretNumber = Math.floor(Math.random() * 11); // 0 to 10
+        state.round = 1;
+        state.history = [];
+        state.finalGuesses = [];
+
+        // Création du "Deck" : on mélange la liste au début de la partie
+        state.deck = [...TOPICS].sort(() => 0.5 - Math.random());
+
+        state.step = "REVEAL";
+        render();
+      }
+
+      function startRound() {
+        // On pioche les 4 prochains sujets du deck
+        // splice retire les éléments du tableau, garantissant qu'ils ne reviennent pas
+        if (state.deck.length < 4) {
+          // Sécurité si on joue trop de manches, on remélange
+          state.deck = [...TOPICS].sort(() => 0.5 - Math.random());
+        }
+        state.currentOptions = state.deck.splice(0, 4);
+
+        state.step = "CHOOSE_TOPIC";
+        render();
+      }
+
+      function handleTopicSelection(topic) {
+        state.selectedTopic = topic;
+        state.step = "ANSWER";
+        render();
+      }
+
+      function submitAnswer(answer) {
+        if (!answer.trim()) return;
+        state.history.push({ topic: state.selectedTopic, answer: answer });
+
+        if (state.round < state.maxRounds) {
+          state.round++;
+          startRound(); // Directement piocher les prochains
+        } else {
+          state.step = "FINAL_GUESS";
+        }
+        render();
+      }
+
+      function addVote(valStr) {
+        if (!valStr) return;
+        const val = parseInt(valStr);
+        if (isNaN(val) || val < 0 || val > 10) return;
+
+        state.finalGuesses.push(val);
+        // On re-render pour vider l'input et mettre à jour la liste
+        render();
+        // Petit focus auto sur l'input pour enchainer (si l'élément existe encore)
+        setTimeout(() => {
+          const input = document.getElementById("voteInput");
+          if (input) input.focus();
+        }, 50);
+      }
+
+      function finishGame() {
+        state.step = "END";
+        render();
+      }
+
+      // --- RENDER ENGINE ---
+
+      function render() {
+        app.innerHTML = ""; // Clear
+
+        // Header
+        if (state.step !== "WELCOME") {
+          const header = document.createElement("div");
+          header.innerHTML = `<p style="font-size:0.8rem; text-transform:uppercase; letter-spacing:1px;">Manche ${
+            state.round > 5 ? 5 : state.round
+          } / 5</p>`;
+          app.appendChild(header);
+        }
+
+        switch (state.step) {
+          case "WELCOME":
+            renderWelcome();
+            break;
+          case "REVEAL":
+            renderReveal();
+            break;
+          case "WAIT_PLAYERS":
+            renderWaitPlayers();
+            break;
+          case "CHOOSE_TOPIC":
+            renderChooseTopic();
+            break;
+          case "ANSWER":
+            renderAnswer();
+            break;
+          case "FINAL_GUESS":
+            renderFinalGuess();
+            break;
+          case "END":
+            renderEnd();
+            break;
+        }
+
+        // History
+        if (
+          ["CHOOSE_TOPIC", "ANSWER", "FINAL_GUESS"].includes(state.step) &&
+          state.history.length > 0
+        ) {
+          renderHistory();
+        }
+      }
+
+      function renderWelcome() {
+        app.innerHTML = `
+            <h1>Le Juste Chiffre 🎯</h1>
+            <p>Jeu de coopération & déduction.</p>
+            <div style="text-align:left; background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:20px; font-size:0.9rem;">
+                <strong>Règles :</strong><br>
+                1. Le <strong>Solo</strong> a un chiffre secret (0-10).<br>
+                2. Le groupe choisit un thème.<br>
+                3. Le Solo donne une réponse correspondant à l'intensité de son chiffre.<br>
+                4. Après 5 indices, <strong>chaque joueur</strong> doit deviner le chiffre !
+            </div>
+            <button class="btn" onclick="initGame()">Nouvelle Partie</button>
+        `;
+      }
+
+      function renderReveal() {
+        app.innerHTML = `
+            <h2>⚠️ ATTENTION</h2>
+            <p>Donnez l'écran au <strong>Joueur Solo</strong>.</p>
+            <p>Les autres, fermez les yeux !</p>
+            <button class="btn btn-secondary" onclick="revealNumber()">Voir mon chiffre secret</button>
+        `;
+      }
+
+      window.revealNumber = () => {
+        app.innerHTML = `
+            <h2>Ton chiffre est :</h2>
+            <div class="secret-number">${state.secretNumber}</div>
+            <div class="scale-info">
+                0 = Je déteste / Jamais / Nul<br>
+                10 = J'adore / Toujours / Génial
+            </div>
+            <button class="btn" onclick="state.step='WAIT_PLAYERS'; render()">Cacher le chiffre</button>
+        `;
+      };
+
+      function renderWaitPlayers() {
+        app.innerHTML = `
+            <h2>C'est caché ! 🔒</h2>
+            <p>Le Joueur Solo peut reposer l'écran.</p>
+            <p>Le groupe est prêt ?</p>
+            <button class="btn" onclick="startRound()">Lancer la manche ${state.round}</button>
+        `;
+      }
+
+      function renderChooseTopic() {
+        app.innerHTML += `
+            <h2>Le groupe choisit un thème</h2>
+            <div class="grid-options">
+                ${state.currentOptions
+                  .map(
+                    (topic) =>
+                      `<button class="btn btn-outline" onclick="handleTopicSelection('${topic.replace(
+                        /'/g,
+                        "\\'"
+                      )}')">${topic}</button>`
+                  )
+                  .join("")}
+            </div>
+        `;
+      }
+
+      function renderAnswer() {
+        app.innerHTML += `
+            <h2>Au Joueur Solo 🎙️</h2>
+            <p>Thème : <strong>${state.selectedTopic}</strong></p>
+            <p>Ta réponse pour le Chiffre <span style="font-weight:bold; color:var(--secondary)">${state.secretNumber}</span> ?</p>
+            <input type="text" id="answerInput" class="input-box" placeholder="Ex: J'adore ça..." autocomplete="off">
+            <button class="btn" onclick="submitAnswer(document.getElementById('answerInput').value)">Valider la réponse</button>
+        `;
+      }
+
+      function renderHistory() {
+        const container = document.createElement("div");
+        container.style.marginTop = "30px";
+        container.style.borderTop = "2px solid #e2e8f0";
+        container.style.paddingTop = "20px";
+
+        container.innerHTML = "<h3>Indices précédents</h3>";
+        state.history.forEach((h, index) => {
+          const div = document.createElement("div");
+          div.className = "history-item";
+          div.innerHTML = `
+              <span>#${index + 1} <span class="history-topic">${
+            h.topic
+          }</span></span>
+              <span style="color:var(--primary); font-weight:bold;">"${
+                h.answer
+              }"</span>
+          `;
+          container.appendChild(div);
+        });
+        app.appendChild(container);
+      }
+
+      function renderFinalGuess() {
+        const currentPlayerIndex = state.finalGuesses.length + 1;
+
+        let votesListHtml = "";
+        if (state.finalGuesses.length > 0) {
+          votesListHtml = `<div class="voter-list">
+                <small>Votes enregistrés :</small><br>
+                ${state.finalGuesses
+                  .map(
+                    (g, i) => `<span class="voter-tag">J${i + 1}: ${g}</span>`
+                  )
+                  .join("")}
+            </div>`;
+        }
+
+        app.innerHTML += `
+            <h2>🤔 Verdict Final</h2>
+            <p>Chacun son tour, donnez votre estimation.</p>
+            
+            ${votesListHtml}
+
+            <label style="font-weight:bold; display:block; margin-bottom:5px;">Estimation du Joueur ${currentPlayerIndex}</label>
+            <input type="number" id="voteInput" class="input-box" min="0" max="10" placeholder="0 - 10" autofocus>
+            
+            <button class="btn" onclick="addVote(document.getElementById('voteInput').value)">Valider Joueur ${currentPlayerIndex}</button>
+            
+            ${
+              state.finalGuesses.length > 0
+                ? `<div style="margin-top:20px; border-top:1px solid #eee; padding-top:20px;">
+                    <p>Tout le monde a voté ?</p>
+                    <button class="btn btn-success" onclick="finishGame()">Découvrir les résultats</button>
+                   </div>`
+                : ""
+            }
+        `;
+      }
+
+      function renderEnd() {
+        app.innerHTML = `
+            <h2>Révélation !</h2>
+            <p>Le chiffre secret était...</p>
+            <div class="secret-number">${state.secretNumber}</div>
+            
+            <div style="width:100%; text-align:left; margin-bottom:30px;">
+                <h3>Résultats des joueurs</h3>
+                ${state.finalGuesses
+                  .map((guess, i) => {
+                    const diff = Math.abs(state.secretNumber - guess);
+                    let resultClass = "result-far";
+                    let text = "Dommage...";
+                    if (diff === 0) {
+                      resultClass = "result-perfect";
+                      text = "PARFAIT ! 🎯";
+                    } else if (diff <= 1) {
+                      resultClass = "result-close";
+                      text = "Tout proche ! 🔥";
+                    }
+
+                    return `
+                    <div class="result-card ${resultClass}">
+                        <div>
+                            <strong>Joueur ${
+                              i + 1
+                            }</strong> a dit <strong>${guess}</strong>
+                        </div>
+                        <div style="font-size:0.9rem; font-weight:bold;">${text}</div>
+                    </div>`;
+                  })
+                  .join("")}
+            </div>
+
+            <button class="btn" onclick="initGame()">Rejouer une partie</button>
+            
+            <div style="margin-top:30px; opacity:0.7">
+                <h4>Rappel des indices</h4>
+                ${state.history
+                  .map(
+                    (h) =>
+                      `<div class="history-item"><span>${h.topic}</span> <strong>${h.answer}</strong></div>`
+                  )
+                  .join("")}
+            </div>
+        `;
+      }
+
+      // Initial render
+      render();
+    </script>
+  </body>
+</html>
