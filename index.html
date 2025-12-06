@@ -440,7 +440,6 @@
 
       window.revealNumber = () => {
         app.innerHTML = `
-            <h2>Ton chiffre est :</h2>
             <div class="secret-number">${state.secretNumber}</div>
             <div class="scale-info">
                 0 = Je déteste / Jamais / Nul<br>
@@ -480,7 +479,6 @@
         app.innerHTML += `
             <h2>Au Joueur Solo 🎙️</h2>
             <p>Thème : <strong>${state.selectedTopic}</strong></p>
-            <p>Ta réponse pour le Chiffre <span style="font-weight:bold; color:var(--secondary)">${state.secretNumber}</span> ?</p>
             <input type="text" id="answerInput" class="input-box" placeholder="Ex: J'adore ça..." autocomplete="off">
             <button class="btn" onclick="submitAnswer(document.getElementById('answerInput').value)">Valider la réponse</button>
         `;
